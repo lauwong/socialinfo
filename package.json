@@ -14,7 +14,6 @@
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
     "@types/express-session": "^1.17.7",
-    "@types/html-to-text": "^9.0.2",
     "@types/morgan": "^1.9.4",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
@@ -37,7 +36,8 @@
     "express-session": "^1.17.3",
     "mongodb": "^5.7.0",
     "morgan": "^1.10.0",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "langchain": "^0.0.157"
   },
   "prettier": {
     "trailingComma": "all",
