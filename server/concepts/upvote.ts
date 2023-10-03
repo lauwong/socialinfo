@@ -26,6 +26,27 @@ export default class UpvoteConcept {
     return { msg: "Upvotes successfully tallied!", count: votes.length };
   }
 
+  async getMostUpvoted(items: ObjectId[]) {
+
+    let maxId;
+    let max = -1;
+
+    for (const item of items) {
+      const count = (await this.upvotes.readMany({ item })).length;
+      if (count > max) {
+        max = count;
+        maxId = item;
+      }
+    }
+
+    if (maxId) {
+      return { msg: "Calculated most upvoted!", item: maxId, count: max };
+    } else {
+      throw new NotFoundError(`No contexts yet!`);
+    }
+    
+  }
+
   private async canCastVote(user: ObjectId, target: ObjectId) {
     if (await this.upvotes.readOne({ user, target })) {
       throw new NotAllowedError(`User ${user} with has already upvoted item ${target}!`);

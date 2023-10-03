@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Context, Friend, Post, User, WebSession } from "./app";
+import { Context, Friend, Post, Upvote, User, WebSession } from "./app";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
@@ -73,6 +73,11 @@ class Routes {
   async createPost(session: WebSessionDoc, content: string, options?: PostOptions) {
     const user = WebSession.getUser(session);
     const created = await Post.create(user, content, options);
+
+    if (created.post) {
+      const ctx = Context.autogenerate(created.post._id, created.post.content);
+    }
+
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
 
@@ -137,11 +142,48 @@ class Routes {
     return await Friend.rejectRequest(fromId, user);
   }
 
-  @Router.post("/contexts/:parent")
-  async createContext(session: WebSessionDoc, parent: ObjectId, content: string) {
+  @Router.get("/contexts/:_id")
+  async getContextsByParent(_id: ObjectId) {
+    const contexts = await Context.getByParent(_id);
+    return Responses.contexts(contexts);
+  }
+
+  @Router.post("/contexts/:_id")
+  async createContext(session: WebSessionDoc, _id: ObjectId, content: string) {
     const user = WebSession.getUser(session);
-    const created = await Context.create(parent, content, user);
+    const created = await Context.create(_id, content, user);
     return { msg: created.msg, context: await Responses.context(created.context) };
+  }
+
+  @Router.post("/upvotes/:_id")
+  async castPostUpvote(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    return await Upvote.cast(user, _id);
+  }
+
+  @Router.delete("/upvotes/:_id")
+  async retractPostUpvote(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    await Upvote.isVoter(user, _id);
+    return await Upvote.retract(_id);
+  }
+
+  @Router.post("/upvotes/:_id")
+  async castContextUpvote(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    return await Upvote.cast(user, _id);
+  }
+
+  @Router.delete("/upvotes/:_id")
+  async retractContextUpvote(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    await Upvote.isVoter(user, _id);
+    return await Upvote.retract(_id);
+  }
+
+  @Router.get("/upvotes/:_id")
+  async countUpvotes(_id: ObjectId) {
+    return await Upvote.countVotes(_id);
   }
 }
 

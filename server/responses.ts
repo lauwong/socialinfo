@@ -44,13 +44,16 @@ export default class Responses {
     }
   }
 
-  // /**
-  //  * Same as {@link post} but for an array of PostDoc for improved performance.
-  //  */
-  // static async contexts(posts: ContextDoc[]) {
-  //   const authors = await User.idsToUsernames(posts.map((post) => post.author));
-  //   return posts.map((post, i) => ({ ...post, author: authors[i] }));
-  // }
+  /**
+   * Same as {@link context} but for an array of ContextDoc.
+   */
+  static async contexts(contexts: ContextDoc[]) {
+    const names = [];
+    for (const context of contexts) {
+      names.push(this.context(context))
+    }
+    return names;
+  }
 
   /**
    * Convert FriendRequestDoc into more readable format for the frontend
