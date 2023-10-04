@@ -11,4 +11,5 @@ export const User = new UserConcept();
 export const Post = new PostConcept();
 export const Friend = new FriendConcept();
 export const Context = new ContextConcept();
-export const Upvote = new UpvoteConcept();
+export const UpvotePost = new UpvoteConcept("upvotes_on_posts");
+export const UpvoteContext = new UpvoteConcept("upvotes_on_contexts");

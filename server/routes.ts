@@ -2,7 +2,8 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Context, Friend, Post, Upvote, User, WebSession } from "./app";
+import { Context, Friend, Post, UpvoteContext, UpvotePost, User, WebSession } from "./app";
+import { NotFoundError } from "./concepts/errors";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
@@ -144,13 +145,21 @@ class Routes {
 
   @Router.get("/contexts/:_id")
   async getContextsByParent(_id: ObjectId) {
+    await Post.isPost(_id);
     const contexts = await Context.getByParent(_id);
+    return Responses.contexts(contexts);
+  }
+
+  @Router.get("/contexts")
+  async getContexts() {
+    const contexts = await Context.getContexts({});
     return Responses.contexts(contexts);
   }
 
   @Router.post("/contexts/:_id")
   async createContext(session: WebSessionDoc, _id: ObjectId, content: string) {
     const user = WebSession.getUser(session);
+    await Post.isPost(_id);
     const created = await Context.create(_id, content, user);
     return { msg: created.msg, context: await Responses.context(created.context) };
   }
@@ -158,32 +167,46 @@ class Routes {
   @Router.post("/upvotes/:_id")
   async castPostUpvote(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
-    return await Upvote.cast(user, _id);
+    await Post.isPost(_id);
+    return await UpvotePost.cast(user, _id);
   }
 
   @Router.delete("/upvotes/:_id")
   async retractPostUpvote(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
-    await Upvote.isVoter(user, _id);
-    return await Upvote.retract(_id);
+    await Post.isPost(_id);
+    await UpvotePost.isVoter(user, _id);
+    return await UpvotePost.retract(_id);
   }
 
   @Router.post("/upvotes/:_id")
   async castContextUpvote(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
-    return await Upvote.cast(user, _id);
+    await Context.isContext(_id);
+    return await UpvoteContext.cast(user, _id);
   }
 
   @Router.delete("/upvotes/:_id")
   async retractContextUpvote(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
-    await Upvote.isVoter(user, _id);
-    return await Upvote.retract(_id);
+    await Context.isContext(_id);
+    await UpvoteContext.isVoter(user, _id);
+    return await UpvoteContext.retract(_id);
   }
 
   @Router.get("/upvotes/:_id")
   async countUpvotes(_id: ObjectId) {
-    return await Upvote.countVotes(_id);
+    const matchingPosts = await Post.getPosts({ _id });
+    if (matchingPosts) {
+      return await UpvotePost.countVotes(_id);
+    }
+    
+    const matchingContexts = await Context.getContexts({ _id });
+    if (matchingContexts) {
+      return await UpvoteContext.countVotes(_id);
+    }
+
+    return new NotFoundError(`Item with id ${_id} was not found!`);
   }
 }
 

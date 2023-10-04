@@ -8,8 +8,8 @@ export async function summarize(text: string): Promise<string> {
   const docs = await textSplitter.createDocuments([text]);
 
   const chain = loadSummarizationChain(model, { type: "map_reduce" });
-  const res = await chain.run({
+  const res = await chain.call({
     input_documents: docs,
   });
-  return res;
+  return res.text;
 }

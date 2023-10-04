@@ -13,7 +13,7 @@ export default class ContextConcept {
   public readonly contexts = new DocCollection<ContextDoc>("contexts");
 
   async create(parent: ObjectId, content: string, author: ObjectId) {
-    this.alreadySubmittedContext(parent, author);
+    await this.alreadySubmittedContext(parent, author);
     const _id = await this.contexts.createOne({ parent, content, author });
     return { msg: "Context successfully created!", context: await this.contexts.readOne({ _id }) };
   }
@@ -22,6 +22,13 @@ export default class ContextConcept {
     const content = await summarize(parentContent);
     const _id = await this.contexts.createOne({ parent, content });
     return { msg: "Context successfully generated!", context: await this.contexts.readOne({ _id }) };
+  }
+
+  async isContext(_id: ObjectId) {
+    const ctx = await this.contexts.readOne({ _id });
+    if (!ctx) {
+      throw new NotFoundError(`Item with ${_id} not found in contexts!`);
+    }
   }
 
   async getContexts(query: Filter<ContextDoc>) {

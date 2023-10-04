@@ -50,7 +50,7 @@ export default class Responses {
   static async contexts(contexts: ContextDoc[]) {
     const names = [];
     for (const context of contexts) {
-      names.push(this.context(context))
+      names.push(await this.context(context))
     }
     return names;
   }

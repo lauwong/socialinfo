@@ -8,16 +8,21 @@ export interface UpvoteDoc extends BaseDoc {
 }
 
 export default class UpvoteConcept {
-  public readonly upvotes = new DocCollection<UpvoteDoc>("upvotes");
+
+  public readonly upvotes;
+
+  constructor(collectionName: string) {
+    this.upvotes = new DocCollection<UpvoteDoc>(collectionName);
+  }
   
   async cast(user: ObjectId, target: ObjectId) {
-    this.canCastVote(user, target);
+    await this.canCastVote(user, target);
     const _id = await this.upvotes.createOne({ user, target });
     return { msg: "Successfully upvoted!", context: await this.upvotes.readOne({ _id }) };
   }
 
-  async retract(_id: ObjectId) {
-    await this.upvotes.deleteOne({ _id });
+  async retract(target: ObjectId) {
+    await this.upvotes.deleteOne({ target });
     return { msg: "Upvote removed successfully!" };
   }
 
@@ -31,11 +36,11 @@ export default class UpvoteConcept {
     let maxId;
     let max = -1;
 
-    for (const item of items) {
-      const count = (await this.upvotes.readMany({ item })).length;
+    for (const _id of items) {
+      const count = (await this.upvotes.readMany({ _id })).length;
       if (count > max) {
         max = count;
-        maxId = item;
+        maxId = _id;
       }
     }
 
@@ -53,22 +58,10 @@ export default class UpvoteConcept {
     }
   }
 
-  async isVoter(user: ObjectId, _id: ObjectId) {
-    const upvote = await this.upvotes.readOne({ _id });
+  async isVoter(user: ObjectId, target: ObjectId) {
+    const upvote = await this.upvotes.readOne({ user, target });
     if (!upvote) {
-      throw new NotFoundError(`Vote ${_id} does not exist!`);
+      throw new NotAllowedError(`User ${user} has not upvoted ${target}!`);
     }
-    if (upvote.user.toString() !== user.toString()) {
-      throw new VoterNotMatchError(user, _id);
-    }
-  }
-}
-
-export class VoterNotMatchError extends NotAllowedError {
-  constructor(
-    public readonly user: ObjectId,
-    public readonly _id: ObjectId,
-  ) {
-    super("{0} is not the originator of {1}!", user, _id);
   }
 }

@@ -77,7 +77,56 @@ const operations: operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  {
+    name: "Create Context",
+    endpoint: "/api/contexts/:id",
+    method: "POST",
+    fields: { id: "input", content: "input"},
+  },
+  {
+    name: "Get All Contexts",
+    endpoint: "/api/contexts",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Get Contexts From Post",
+    endpoint: "/api/contexts/:id",
+    method: "GET",
+    fields: { id: "input" },
+  },
+  {
+    name: "Upvote Post",
+    endpoint: "/api/upvotes/:id",
+    method: "POST",
+    fields: { id: "input" },
+  },
+  {
+    name: "Upvote Context",
+    endpoint: "/api/upvotes/:id",
+    method: "POST",
+    fields: { id: "input" },
+  },
+  {
+    name: "Retract Context Upvote",
+    endpoint: "/api/upvotes/:id",
+    method: "DELETE",
+    fields: { id: "input" },
+  },
+  {
+    name: "Retract Post Upvote",
+    endpoint: "/api/upvotes/:id",
+    method: "DELETE",
+    fields: { id: "input" },
+  },
+  {
+    name: "Count Upvotes",
+    endpoint: "/api/upvotes/:id",
+    method: "GET",
+    fields: { id: "input" },
+  },
 ];
+
 
 // Do not edit below here.
 // If you are interested in how this works, feel free to ask on forum!
