@@ -143,6 +143,26 @@ class Routes {
     return await Friend.rejectRequest(fromId, user);
   }
 
+  @Router.get("/follows")
+  async getFollows(session: WebSessionDoc) {
+    // Gets the users that the session user is following
+  }
+
+  @Router.delete("/follows")
+  async getFollowers(session: WebSessionDoc) {
+    // Gets the users that follow the session user
+  }
+
+  @Router.post("/follows/:user")
+  async follow(session: WebSessionDoc, user: string) {
+    // Follow another user
+  }
+
+  @Router.delete("/follows/:user")
+  async unfollow(session: WebSessionDoc, user: string) {
+    // Unfollow the user
+  }
+
   @Router.get("/contexts/:_id")
   async getContextsByParent(_id: ObjectId) {
     await Post.isPost(_id);
