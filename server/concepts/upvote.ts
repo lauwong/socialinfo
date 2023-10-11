@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { NotAllowedError, NotFoundError } from "./errors";
+import { NotAllowedError } from "./errors";
 
 export interface UpvoteDoc extends BaseDoc {
   target: ObjectId;
@@ -69,25 +69,23 @@ export default class UpvoteConcept {
     return -1;
   }
 
-  async getMostUpvoted(items: ObjectId[]) {
+  async getMostUpvoted(items: ObjectId[]): Promise<ObjectId> {
 
-    let maxId;
-    let max = -1;
+    if (items.length === 0) {
+      throw new NotAllowedError(`No items to check!`);
+    }
 
-    for (const _id of items) {
-      const count = (await this.upvotes.readMany({ _id })).length;
-      if (count > max) {
-        max = count;
-        maxId = _id;
+    let top_item: ObjectId = items[0];
+    let max_votes: number = -1;
+
+    for (const item of items) {
+      const curr_votes = (await this.countVotes(item)).count;
+      if (curr_votes > max_votes) {
+        top_item = item;
+        max_votes = curr_votes;
       }
     }
-
-    if (maxId) {
-      return { msg: "Calculated most upvoted!", item: maxId, count: max };
-    } else {
-      throw new NotFoundError(`No contexts yet!`);
-    }
-    
+    return top_item;
   }
 
   async isVoter(user: ObjectId, target: ObjectId) {

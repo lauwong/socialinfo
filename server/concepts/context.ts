@@ -37,6 +37,10 @@ export default class ContextConcept {
     return await this.getContexts({ parent });
   }
 
+  async getById(_id: ObjectId) {
+    return await this.contexts.readOne({ _id });
+  }
+
   async update(_id: ObjectId, update: Partial<ContextDoc>) {
     this.sanitizeUpdate(update);
     await this.contexts.updateOne({ _id }, update);

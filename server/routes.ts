@@ -235,16 +235,27 @@ class Routes {
   @Router.get("/upvotes/:_id")
   async countUpvotes(_id: ObjectId) {
     const matchingPosts = await Post.getPosts({ _id });
-    if (matchingPosts) {
+    if (matchingPosts.length > 0) {
       return await UpvotePost.countVotes(_id);
     }
     
     const matchingContexts = await Context.getContexts({ _id });
-    if (matchingContexts) {
+    if (matchingContexts.length > 0) {
       return await UpvoteContext.countVotes(_id);
     }
 
     return new NotFoundError(`Item with id ${_id} was not found!`);
+  }
+
+  @Router.get("/upvotes/posts/:_id")
+  async getTopContext(_id: ObjectId) {
+    const contexts = await Context.getByParent(new ObjectId(_id));
+    if (contexts.length === 0) {
+      return { msg:`Post ${_id} has no contexts!` };
+    }
+    const top_id = await UpvoteContext.getMostUpvoted(contexts.map((ctx) => ctx._id));
+    const top_context = await Context.getById(top_id);
+    return {msg: "Most upvoted item retrieved!", item: await Responses.context(top_context)};
   }
 }
 

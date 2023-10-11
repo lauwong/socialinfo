@@ -132,6 +132,12 @@ const operations: operation[] = [
     fields: { id: "input" },
   },
   {
+    name: "Get Most Upvoted Context",
+    endpoint: "/api/upvotes/posts/:id",
+    method: "GET",
+    fields: { id: "input" },
+  },
+  {
     name: "Get Follows",
     endpoint: "/api/follows/following",
     method: "GET",
