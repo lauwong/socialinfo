@@ -9,6 +9,8 @@ import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
 import Responses from "./responses";
 
+import { summarize } from "./helpers";
+
 class Routes {
   @Router.get("/session")
   async getSessionUser(session: WebSessionDoc) {
@@ -76,7 +78,8 @@ class Routes {
     const created = await Post.create(user, content, options);
 
     if (created.post) {
-      const ctx = Context.autogenerate(created.post._id, created.post.content);
+      const summary = await summarize(created.post.content);
+      await Context.create(created.post._id, summary);
     }
 
     return { msg: created.msg, post: await Responses.post(created.post) };
@@ -159,7 +162,7 @@ class Routes {
     return await Follow.getFollows(user);
   }
 
-  @Router.delete("/follows/followers")
+  @Router.get("/follows/followers")
   async getFollowers(session: WebSessionDoc) {
     // Gets the users that follow the session user
     const user = WebSession.getUser(session);
@@ -183,7 +186,7 @@ class Routes {
   @Router.get("/contexts/:_id")
   async getContextsByParent(_id: ObjectId) {
     await Post.isPost(_id);
-    const contexts = await Context.getByParent(_id);
+    const contexts = await Context.getByParent(new ObjectId(_id));
     return Responses.contexts(contexts);
   }
 
@@ -197,7 +200,7 @@ class Routes {
   async createContext(session: WebSessionDoc, _id: ObjectId, content: string) {
     const user = WebSession.getUser(session);
     await Post.isPost(_id);
-    const created = await Context.create(_id, content, user);
+    const created = await Context.create(new ObjectId(_id), content, user);
     return { msg: created.msg, context: await Responses.context(created.context) };
   }
 

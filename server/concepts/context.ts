@@ -1,6 +1,5 @@
 import { Filter, ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { summarize } from "../helpers";
 import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface ContextDoc extends BaseDoc {
@@ -12,16 +11,12 @@ export interface ContextDoc extends BaseDoc {
 export default class ContextConcept {
   public readonly contexts = new DocCollection<ContextDoc>("contexts");
 
-  async create(parent: ObjectId, content: string, author: ObjectId) {
-    await this.alreadySubmittedContext(parent, author);
+  async create(parent: ObjectId, content: string, author?: ObjectId) {
+    if (author !== undefined) {
+      await this.alreadySubmittedContext(parent, author);
+    }
     const _id = await this.contexts.createOne({ parent, content, author });
     return { msg: "Context successfully created!", context: await this.contexts.readOne({ _id }) };
-  }
-
-  async autogenerate(parent: ObjectId, parentContent: string) {
-    const content = await summarize(parentContent);
-    const _id = await this.contexts.createOne({ parent, content });
-    return { msg: "Context successfully generated!", context: await this.contexts.readOne({ _id }) };
   }
 
   async isContext(_id: ObjectId) {
