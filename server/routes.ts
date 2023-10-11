@@ -204,34 +204,32 @@ class Routes {
     return { msg: created.msg, context: await Responses.context(created.context) };
   }
 
-  @Router.post("/upvotes/:_id")
+  @Router.post("/upvotes/posts/:_id")
   async castPostUpvote(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
     await Post.isPost(_id);
     return await UpvotePost.cast(user, _id);
   }
 
-  @Router.delete("/upvotes/:_id")
+  @Router.delete("/upvotes/posts/:_id")
   async retractPostUpvote(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
     await Post.isPost(_id);
-    await UpvotePost.isVoter(user, _id);
-    return await UpvotePost.retract(_id);
+    return await UpvotePost.retract(user, _id);
   }
 
-  @Router.post("/upvotes/:_id")
+  @Router.post("/upvotes/contexts/:_id")
   async castContextUpvote(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
     await Context.isContext(_id);
     return await UpvoteContext.cast(user, _id);
   }
 
-  @Router.delete("/upvotes/:_id")
+  @Router.delete("/upvotes/contexts/:_id")
   async retractContextUpvote(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
     await Context.isContext(_id);
-    await UpvoteContext.isVoter(user, _id);
-    return await UpvoteContext.retract(_id);
+    return await UpvoteContext.retract(user, _id);
   }
 
   @Router.get("/upvotes/:_id")
