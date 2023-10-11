@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Context, Friend, Post, UpvoteContext, UpvotePost, User, WebSession } from "./app";
+import { Context, Follow, Friend, Post, UpvoteContext, UpvotePost, User, WebSession } from "./app";
 import { NotFoundError } from "./concepts/errors";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
@@ -58,7 +58,7 @@ class Routes {
     return { msg: "Logged out!" };
   }
 
-  @Router.get("/posts")
+  @Router.get("/posts/all")
   async getPosts(author?: string) {
     let posts;
     if (author) {
@@ -94,6 +94,15 @@ class Routes {
     const user = WebSession.getUser(session);
     await Post.isAuthor(user, _id);
     return Post.delete(_id);
+  }
+
+  @Router.get("/posts")
+  async getUserFeed(session: WebSessionDoc) {
+    const u = WebSession.getUser(session);
+    const following = await Follow.getFollows(u);
+    return await Post.getPosts({ author: {
+      $in: following
+    }});
   }
 
   @Router.get("/friends")
@@ -143,24 +152,32 @@ class Routes {
     return await Friend.rejectRequest(fromId, user);
   }
 
-  @Router.get("/follows")
+  @Router.get("/follows/following")
   async getFollows(session: WebSessionDoc) {
     // Gets the users that the session user is following
+    const user = WebSession.getUser(session);
+    return await Follow.getFollows(user);
   }
 
-  @Router.delete("/follows")
+  @Router.delete("/follows/followers")
   async getFollowers(session: WebSessionDoc) {
     // Gets the users that follow the session user
+    const user = WebSession.getUser(session);
+    return await Follow.getFollowers(user);
   }
 
   @Router.post("/follows/:user")
   async follow(session: WebSessionDoc, user: string) {
-    // Follow another user
+    const u = WebSession.getUser(session);
+    const other = (await User.getUserByUsername(user))._id;
+    return await Follow.follow(u, other);
   }
 
   @Router.delete("/follows/:user")
   async unfollow(session: WebSessionDoc, user: string) {
-    // Unfollow the user
+    const u = WebSession.getUser(session);
+    const other = (await User.getUserByUsername(user))._id;
+    return await Follow.unfollow(u, other);
   }
 
   @Router.get("/contexts/:_id")

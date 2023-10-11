@@ -55,9 +55,15 @@ const operations: operation[] = [
   },
   {
     name: "Get Posts (empty for all)",
-    endpoint: "/api/posts",
+    endpoint: "/api/posts/all",
     method: "GET",
     fields: { author: "input" },
+  },
+  {
+    name: "Get User Feed",
+    endpoint: "/api/posts",
+    method: "GET",
+    fields: {},
   },
   {
     name: "Create Post",
@@ -124,6 +130,30 @@ const operations: operation[] = [
     endpoint: "/api/upvotes/:id",
     method: "GET",
     fields: { id: "input" },
+  },
+  {
+    name: "Get Follows",
+    endpoint: "/api/follows/following",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Get Followers",
+    endpoint: "/api/follows/followers",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Follow",
+    endpoint: "/api/follows/:user",
+    method: "POST",
+    fields: { user: "input" },
+  },
+  {
+    name: "Unfollow",
+    endpoint: "/api/follows/:user",
+    method: "DELETE",
+    fields: { user: "input" },
   },
 ];
 
