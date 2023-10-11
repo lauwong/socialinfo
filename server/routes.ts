@@ -250,12 +250,18 @@ class Routes {
 
   @Router.get("/upvotes/posts/:_id")
   async getTopContext(_id: ObjectId) {
+
+    await Post.isPost(_id);
+
     const contexts = await Context.getByParent(new ObjectId(_id));
+    
     if (contexts.length === 0) {
       return { msg:`Post ${_id} has no contexts!` };
     }
+
     const top_id = await UpvoteContext.getMostUpvoted(contexts.map((ctx) => ctx._id));
     const top_context = await Context.getById(top_id);
+
     return {msg: "Most upvoted item retrieved!", item: await Responses.context(top_context)};
   }
 }
