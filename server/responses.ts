@@ -3,6 +3,7 @@ import { ContextDoc } from "./concepts/context";
 import { AlreadyFollowingError, FollowDoc, FollowNotFoundError } from "./concepts/follow";
 import { AlreadyFriendsError, FriendNotFoundError, FriendRequestAlreadyExistsError, FriendRequestDoc, FriendRequestNotFoundError } from "./concepts/friend";
 import { PostAuthorNotMatchError, PostDoc } from "./concepts/post";
+import { AlreadyUpvotedError, NotUpvotedError } from "./concepts/upvote";
 import { Router } from "./framework/router";
 
 /**
@@ -79,6 +80,16 @@ export default class Responses {
     return usernames;
   }
 }
+
+Router.registerError(AlreadyUpvotedError, async (e) => {
+  const username = (await User.getUserById(e.user)).username;
+  return e.formatWith(username, e.target);
+});
+
+Router.registerError(NotUpvotedError, async (e) => {
+  const username = (await User.getUserById(e.user)).username;
+  return e.formatWith(username, e.target);
+});
 
 Router.registerError(PostAuthorNotMatchError, async (e) => {
   const username = (await User.getUserById(e.author)).username;
