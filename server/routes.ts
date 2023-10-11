@@ -103,9 +103,10 @@ class Routes {
   async getUserFeed(session: WebSessionDoc) {
     const u = WebSession.getUser(session);
     const following = await Follow.getFollows(u);
-    return await Post.getPosts({ author: {
-      $in: following
+    const feed = await Post.getPosts({ author: {
+      $in: following.map((f) => f.other)
     }});
+    return await Responses.posts(feed);
   }
 
   @Router.get("/friends")
@@ -159,14 +160,14 @@ class Routes {
   async getFollows(session: WebSessionDoc) {
     // Gets the users that the session user is following
     const user = WebSession.getUser(session);
-    return await Follow.getFollows(user);
+    return await Responses.following(await Follow.getFollows(user));
   }
 
   @Router.get("/follows/followers")
   async getFollowers(session: WebSessionDoc) {
     // Gets the users that follow the session user
     const user = WebSession.getUser(session);
-    return await Follow.getFollowers(user);
+    return await Responses.followers(await Follow.getFollowers(user));
   }
 
   @Router.post("/follows/:user")

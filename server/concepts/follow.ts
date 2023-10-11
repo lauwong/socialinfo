@@ -23,17 +23,18 @@ export default class FollowConcept {
     if (follow === null) {
       throw new FollowNotFoundError(user, other);
     }
+    await this.follows.deleteOne({ user, other });
     return { msg: `Unfollowed!` };
   }
 
   async getFollows(user: ObjectId) {
     const follows = await this.follows.readMany({ user });
-    return follows.map((follow) => follow.other);
+    return follows;
   }
 
   async getFollowers(u: ObjectId) {
     const followers = await this.follows.readMany({ other: u });
-    return followers.map((follow) => follow.user);
+    return followers;
   }
 
   private async isNotFollowing(user: ObjectId, other: ObjectId) {

@@ -1,5 +1,6 @@
 import { User } from "./app";
 import { ContextDoc } from "./concepts/context";
+import { AlreadyFollowingError, FollowDoc, FollowNotFoundError } from "./concepts/follow";
 import { AlreadyFriendsError, FriendNotFoundError, FriendRequestAlreadyExistsError, FriendRequestDoc, FriendRequestNotFoundError } from "./concepts/friend";
 import { PostAuthorNotMatchError, PostDoc } from "./concepts/post";
 import { Router } from "./framework/router";
@@ -65,6 +66,18 @@ export default class Responses {
     const usernames = await User.idsToUsernames(from.concat(to));
     return requests.map((request, i) => ({ ...request, from: usernames[i], to: usernames[i + requests.length] }));
   }
+
+  static async following(follows: FollowDoc[]) {
+    const followings = follows.map((f) => f.other);
+    const usernames = await User.idsToUsernames(followings);
+    return usernames;
+  }
+
+  static async followers(follows: FollowDoc[]) {
+    const userFollowers = follows.map((f) => f.user);
+    const usernames = await User.idsToUsernames(userFollowers);
+    return usernames;
+  }
 }
 
 Router.registerError(PostAuthorNotMatchError, async (e) => {
@@ -89,5 +102,15 @@ Router.registerError(FriendRequestNotFoundError, async (e) => {
 
 Router.registerError(AlreadyFriendsError, async (e) => {
   const [user1, user2] = await Promise.all([User.getUserById(e.user1), User.getUserById(e.user2)]);
+  return e.formatWith(user1.username, user2.username);
+});
+
+Router.registerError(FollowNotFoundError, async (e) => {
+  const [user1, user2] = await Promise.all([User.getUserById(e.user), User.getUserById(e.other)]);
+  return e.formatWith(user1.username, user2.username);
+});
+
+Router.registerError(AlreadyFollowingError, async (e) => {
+  const [user1, user2] = await Promise.all([User.getUserById(e.user), User.getUserById(e.other)]);
   return e.formatWith(user1.username, user2.username);
 });
